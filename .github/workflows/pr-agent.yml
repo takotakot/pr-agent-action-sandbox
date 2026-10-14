@@ -1,0 +1,36 @@
+name: PR Agent
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+jobs:
+  pr_agent:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          # service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }} # Use Direct WIF
+
+      # Replace the digest with the "uses:" line from the build-image.yml run summary.
+      - uses: docker://ghcr.io/takotakot/pr-agent-action-sandbox@sha256:a512a24189011be335a2e208a28028bee0ac6e7e83631318cd3d7897099f5427
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          config.model: "vertex_ai/gemini-4-argon"
+          config.fallback_models: '["vertex_ai/gemini-4-argon"]'
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "true"
+          VERTEXAI.VERTEX_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+          VERTEXAI.VERTEX_LOCATION: 'global'
