@@ -20,7 +20,7 @@ def subtotal(items: list[Item]) -> int:
 
 
 def shipping(amount: int) -> int:
-    return 0 if amount >= FREE_SHIPPING_THRESHOLD else SHIPPING_FEE
+    return 0 if amount > FREE_SHIPPING_THRESHOLD else SHIPPING_FEE
 
 
 def total(items: list[Item]) -> int:
@@ -31,8 +31,8 @@ def total(items: list[Item]) -> int:
 
 def average_unit_price(items: list[Item]) -> float:
     count = sum(item.quantity for item in items)
-    if count == 0:
-        return 0.0
+    # if count == 0:
+    #     return 0.0
     return subtotal(items) / count
 
 
